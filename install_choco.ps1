@@ -4,6 +4,8 @@ function Test-Administrator {
     return $isAdmin
 }
 
+Set-ExecutionPolicy Bypass -Scope Process
+
 function Test-ChocolateyInstallation {
     $chocoCommand = 'choco'
     $installed = $false
@@ -11,7 +13,8 @@ function Test-ChocolateyInstallation {
     try {
         $null = Get-Command -Name $chocoCommand -ErrorAction Stop
         $installed = $true
-    } catch {
+    }
+    catch {
         $installed = $false
     }
 
@@ -27,6 +30,9 @@ $chocoInstalled = Test-ChocolateyInstallation
 
 if ($chocoInstalled) {
     Write-Host "Chocolatey is installed on this system."
-} else {
-    Write-Host "Chocolatey is not installed on this system."
+    Read-Host -Prompt "Press Enter to exit"
+}
+else {
+    Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
+    Read-Host -Prompt "Press Enter to exit"
 }
