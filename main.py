@@ -22,6 +22,15 @@ def create_log_file():
         print(f"An error occurred while creating the file: {e}")
 
 
+def write_to_log_file(s):
+    file_path = "log.txt"
+    try:
+        with open(file_path, 'a') as log_file:
+            log_file.write(s)
+    except Exception as e:
+        print(f"An error occurred while reading the file: {e}")
+
+
 def remove_all_files_and_folders(folder):
     for filename in os.listdir(folder):
         file_path = os.path.join(folder, filename)
@@ -48,18 +57,26 @@ def clear_cache():
     else:
         pass
 
+    write_to_log_file("System cache cleared successfully.")
     print("System cache cleared successfully.")
 
 
 def install_choco():
     try:
-        # Get the path of the PowerShell script
-        script_path = os.path.abspath("install_choco.ps1")
+        run_with_powershell(os.path.abspath("Powershell\install_choco.ps1"))
+        write_to_log_file("Choco installed successfully.")
+        
+    except subprocess.CalledProcessError:
+        print("Failed to run the script with administrative privileges.")
+        write_to_log_file("Failed to install Choco.")
+        exit(1)
 
-        # Run the PowerShell script with administrative privileges
-        subprocess.run(["powershell", "-NoExit", "-Command",
-                       f"Start-Process powershell -Verb runAs -ArgumentList '-ExecutionPolicy Bypass -File \"{script_path}\"'"], check=True)
 
+def run_with_powershell(fp):
+    script_path = fp
+    # Run the PowerShell script with administrative privileges
+    try:
+        subprocess.run(["powershell", "-NoExit", "-Command", f"Start-Process powershell -Verb runAs -ArgumentList '-ExecutionPolicy Bypass -File \"{script_path}\"'"], check=True)
     except subprocess.CalledProcessError:
         print("Failed to run the script with administrative privileges.")
         exit(1)
@@ -69,6 +86,7 @@ def display_menu():
     print("\nGeneral Script Menu:")
     print("1. Clear cache")
     print("2. Install Choco")
+    print("3. Install Essential Programs")
     print("0. Exit")
 
 
@@ -94,7 +112,12 @@ def main():
                 clear_cache()
             elif choice == "2":
                 install_choco()
-                pass
+            elif choice == "3":
+                if(input("This script will install 7-zip and VLC, do you wish to continue? \nEnter \"y\" if you do and Enter to exit.\n") == "y"):
+                    run_with_powershell(os.path.abspath("Powershell\install_programs.ps1"))
+                else:
+                    os.system("cls")
+                    pass
             else:
                 print("Invalid choice. Please try again.")
     else:
